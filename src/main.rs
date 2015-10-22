@@ -1,17 +1,14 @@
-#![feature(libc)]
-
-mod pulse; 
-
 extern crate libc;
+extern crate time;
 
-use std::io::stdin;
+mod pulse;
 
 fn main() {
-    let mut pa = pulse::pa_simple::new("pa_name", "stream_name");
+    let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink");
+
 //  print!("type something: ");
 //  let mut _stdin = stdin();
 //  let mut read_line = String::new();
 //  _stdin.read_line(&mut read_line);
-    println!("FART");
-    pa.read_loop(); 
+    pa.read_loop();
 }
