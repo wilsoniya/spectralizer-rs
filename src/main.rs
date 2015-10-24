@@ -1,13 +1,15 @@
 extern crate num;
 extern crate libc;
 extern crate time;
+extern crate sdl2;
 
 mod pulse;
 mod fft;
+mod vis;
 
 use std::fmt::Display;
 
-const BUF_SIZE: usize = 64;
+const BUF_SIZE: usize = 1024;
 
 fn main() {
     let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink");
@@ -15,6 +17,8 @@ fn main() {
     let mut buf   = [0i16; BUF_SIZE];
     let mut f_buf = [0f64; BUF_SIZE];
     let mut res   = [0f64; BUF_SIZE];
+
+    let mut visualizer = vis::Visualizer::new();
 
     loop {
         pa.sample(&mut buf[..]);
@@ -27,7 +31,9 @@ fn main() {
 
 //      print_mono(&buf);
 //      print_mono(&res);
-        print_pair(&buf, &res);
+//      print_pair(&buf, &res);
+        visualizer.draw_hist(&res);
+//      visualizer.draw_hist(&f_buf);
     }
 }
 

@@ -5,7 +5,7 @@ use std::str::from_utf8;
 
 use time::{Timespec, get_time};
 
-const SAMPLE_RATE: usize = 44100 / 2;
+const SAMPLE_RATE: usize = 44100 / 1;
 const BUF_SIZE: usize = 1100;
 //const SAMPLE_RATE: usize = 44100 / 32;
 
