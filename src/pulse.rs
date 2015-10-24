@@ -5,7 +5,7 @@ use std::str::from_utf8;
 
 use time::{Timespec, get_time};
 
-const SAMPLE_RATE: usize = 44100;
+const SAMPLE_RATE: usize = 44100 / 2;
 const BUF_SIZE: usize = 1100;
 //const SAMPLE_RATE: usize = 44100 / 32;
 
@@ -59,7 +59,7 @@ impl PulseAudio {
         let mut s_spec = pa_sample_spec{
             format: PA_SAMPLE_S16LE,
             rate: SAMPLE_RATE as u32,
-            channels: 2};
+            channels: 1};
 
         unsafe {
             let pa = pa_simple_new(ptr::null_mut::<i8>() as *mut i8,
@@ -95,6 +95,16 @@ impl PulseAudio {
             let delta = t1 - t0;
             println!("Duration: {}us", delta.num_microseconds().unwrap());
 
+        }
+    }
+
+    pub fn sample(&mut self, buf: &mut [i16]) {
+        let mut err: c_int = 0;
+
+        unsafe {
+            pa_simple_read(self.ptr, buf.as_mut_ptr(), (buf.len() * 2) as u64,
+                           &mut err);
+            PulseAudio::handle_error(err);
         }
     }
 
