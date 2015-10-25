@@ -1,19 +1,22 @@
+//! Funcionality related to computing Fourier transforms.
+
 use num::Complex;
 use std::f64::consts::PI;
 
+/// Real-valued FFT. Essentially just ignores imaginary components of
+/// Cooley-Tukey.
 pub fn real_fft(x: &[f64], X: &mut [f64]) {
     assert!(x.len() == X.len());
     let x_complex: Vec<Complex<f64>> = x.iter().map(|&n| Complex::new(n, 0.0)).collect();
-    let ret_complex = ditfft2(&x_complex[..], x_complex.len(), 1);
+    let ret_complex = ditfft2(&x_complex[..]);
 
     for (i, n) in ret_complex.iter().enumerate() {
         X[i] = n.re;
     }
 }
 
-fn ditfft2(x: &[Complex<f64>], N: usize, s: usize) -> Vec<Complex<f64>> {
-    let mut X: Vec<Complex<f64>> = vec![Complex::new(0.0, 0.0); N];
-
+// Cooley-Tukey FFT algorithm from wikipedia
+//
 // X0,...,N−1 ← ditfft2(x, N, s):             DFT of (x0, xs, x2s, ..., x(N-1)s):
 //     if N = 1 then
 //         X0 ← x0                                      trivial size-1 DFT base case
@@ -27,21 +30,25 @@ fn ditfft2(x: &[Complex<f64>], N: usize, s: usize) -> Vec<Complex<f64>> {
 //         endfor
 //     endif
 
+/// Cooley-Tukey complex FFT
+fn ditfft2(x: &[Complex<f64>]) -> Vec<Complex<f64>> {
+    let N = x.len();
+    let mut X: Vec<Complex<f64>> = vec![Complex::new(0.0, 0.0); N];
 
     if N == 1 {
         X[0] = x[0];
     } else {
         let evens: Vec<Complex<f64>> = x.iter().enumerate()
-            .filter(|&(i, n)| i % 2 == 0)
+            .filter(|&(i, _)| i % 2 == 0)
             .map(|(_, &n)| n)
             .collect();
         let odds: Vec<Complex<f64>> = x.iter().enumerate()
-            .filter(|&(i, n)| i % 2 == 1)
+            .filter(|&(i, _)| i % 2 == 1)
             .map(|(_, &n)| n)
             .collect();
 
-        let X_even = ditfft2(&evens[..], N / 2, s * 2);
-        let X_odd = ditfft2(&odds[..], N / 2, s * 2);
+        let X_even = ditfft2(&evens[..]);
+        let X_odd = ditfft2(&odds[..]);
 
         let upper_bound = match N {
             2 => 1,
@@ -59,10 +66,8 @@ fn ditfft2(x: &[Complex<f64>], N: usize, s: usize) -> Vec<Complex<f64>> {
 }
 
 /// Euler's formula
-fn cis(ix: f64) -> Complex<f64> {
-    let re = ix.cos();
-    let im = ix.sin();
+fn cis(x: f64) -> Complex<f64> {
+    let re = x.cos();
+    let im = x.sin();
     Complex::new(re, im)
-
-//   Complex::new(ix.exp(), 0.0)
 }
