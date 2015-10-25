@@ -5,8 +5,10 @@ use sdl2;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 
-const WIN_WIDTH: u32 = 512;
-const WIN_HEIGHT: u32 = 384;
+//const WIN_WIDTH: u32 = 512;
+//const WIN_HEIGHT: u32 = 384;
+const WIN_WIDTH: u32 = 256;
+const WIN_HEIGHT: u32 = 192;
 
 /// Visualizer
 pub struct Visualizer<'a> {
@@ -38,6 +40,7 @@ impl<'a> Visualizer<'a> {
     pub fn draw_hist(&mut self, freqs: &[f64]) {
         let height_offset = WIN_HEIGHT as f64;
         let scale_factor: f64 = height_offset / 32768.0;
+//      let scale_factor: f64 = 10.0;
 
         self.sdl_renderer.set_draw_color(Color::RGB(0, 0, 0));
         self.sdl_renderer.clear();

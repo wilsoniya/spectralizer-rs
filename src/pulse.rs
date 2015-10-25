@@ -5,7 +5,7 @@ use std::ptr;
 use std::ffi::{CString, CStr};
 use std::str::from_utf8;
 
-const SAMPLE_RATE: usize = 30000;
+const SAMPLE_RATE: usize = 32768;
 
 #[link(name = "pulse-simple")]
 #[link(name = "pulse")]
