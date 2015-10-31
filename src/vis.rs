@@ -1,27 +1,29 @@
 //! Sequence visualizer. Meant for visualzing freq domain sequences, but will
 //! just as hapily draw time domain or any other sequential stuff.
 
+use std::process::exit;
+
 use sdl2;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-
-//const WIN_WIDTH: u32 = 512;
-//const WIN_HEIGHT: u32 = 384;
-const WIN_WIDTH: u32 = 256;
-const WIN_HEIGHT: u32 = 192;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 
 /// Visualizer
 pub struct Visualizer<'a> {
     sdl_renderer: sdl2::render::Renderer<'a>,
+    sdl_event_pump: sdl2::sdl::EventPump,
+    win_width: u32,
+    win_height: u32,
 }
 
 impl<'a> Visualizer<'a> {
     /// Creates a new visualizer.
-    pub fn new() -> Visualizer<'a> {
+    pub fn new(win_name: &str, win_width: u32, win_height: u32) -> Visualizer<'a> {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        let window = video_subsystem.window("FART", WIN_WIDTH, WIN_HEIGHT)
+        let window = video_subsystem.window(win_name, win_width, win_height)
             .position_centered()
             .opengl()
             .build()
@@ -31,6 +33,9 @@ impl<'a> Visualizer<'a> {
 
         let ret = Visualizer {
             sdl_renderer: renderer,
+            sdl_event_pump: sdl_context.event_pump().unwrap(),
+            win_width: win_width,
+            win_height: win_height,
         };
 
         ret
@@ -38,15 +43,18 @@ impl<'a> Visualizer<'a> {
 
     /// Draws a histogram using *freqs*.
     pub fn draw_hist(&mut self, freqs: &[f64]) {
-        let height_offset = WIN_HEIGHT as f64;
+        let height_offset = self.win_height as f64;
         let scale_factor: f64 = height_offset / 32768.0;
-//      let scale_factor: f64 = 10.0;
 
         self.sdl_renderer.set_draw_color(Color::RGB(0, 0, 0));
         self.sdl_renderer.clear();
         self.sdl_renderer.set_draw_color(Color::RGB(255, 255, 255));
 
-        let width: u32 = WIN_WIDTH / freqs.len() as u32;
+        let width: u32 = if self.win_width >= freqs.len() as u32 {
+            self.win_width / freqs.len() as u32
+        } else {
+            1
+        };
 
         for (i, &freq) in freqs.iter().enumerate() {
             let _freq = freq * -1.0;
@@ -65,5 +73,20 @@ impl<'a> Visualizer<'a> {
         }
 
         self.sdl_renderer.present();
+    }
+
+    /// Handles UI events
+    ///
+    /// At the moment this just means listens for the user pressing escape or
+    /// closing the window.
+    pub fn handle_events(&mut self) {
+        for event in self.sdl_event_pump.poll_iter() {
+            match event {
+                Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                    exit(0);
+                },
+                _ => {}
+            }
+        }
     }
 }

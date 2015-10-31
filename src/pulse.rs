@@ -5,8 +5,6 @@ use std::ptr;
 use std::ffi::{CString, CStr};
 use std::str::from_utf8;
 
-const SAMPLE_RATE: usize = 32768;
-
 #[link(name = "pulse-simple")]
 #[link(name = "pulse")]
 extern {
@@ -24,7 +22,7 @@ extern {
                       num_bytes: size_t,
                       error: *mut c_int) -> c_int;
     fn pa_strerror(error: c_int) -> *mut c_char;
-
+    fn pa_simple_flush(pa: *mut pa_simple, error: *mut c_int) -> c_int;
 }
 
 // typedef struct pa_simple pa_simple
@@ -33,6 +31,7 @@ struct pa_simple;
 /// Rust wrapper over simple pulseaudio structure.
 pub struct PulseAudio {
     ptr: *mut pa_simple,
+    sample_rate: usize,
 }
 
 // see pulse/def.h
@@ -53,12 +52,13 @@ static PA_STREAM_UPLOAD:      c_int = 3_i32;
 
 impl PulseAudio {
     /// Creates a new PulseAudio.
-    pub fn new(pa_name: &str, stream_name: &str) -> PulseAudio {
+    pub fn new(pa_name: &str, stream_name: &str,
+               sample_rate: usize) -> PulseAudio {
         let mut err: c_int = 0;
 
         let mut s_spec = pa_sample_spec{
             format: PA_SAMPLE_S16LE,
-            rate: SAMPLE_RATE as u32,
+            rate: sample_rate as u32,
             channels: 1};
 
         unsafe {
@@ -73,7 +73,7 @@ impl PulseAudio {
                                    &mut err);
             PulseAudio::handle_error(err);
 
-            PulseAudio { ptr: pa }
+            PulseAudio { ptr: pa, sample_rate: sample_rate }
         }
     }
 
@@ -82,8 +82,16 @@ impl PulseAudio {
         let mut err: c_int = 0;
 
         unsafe {
-            pa_simple_read(self.ptr, buf.as_mut_ptr(), (buf.len() * 2) as u64,
-                           &mut err);
+            pa_simple_read(self.ptr, buf.as_mut_ptr(),
+                           (buf.len() * 2) as size_t, &mut err);
+            PulseAudio::handle_error(err);
+        }
+    }
+
+    pub fn flush(&mut self) {
+        let mut err: c_int = 0;
+        unsafe {
+            assert!(0 == pa_simple_flush(self.ptr, &mut err));
             PulseAudio::handle_error(err);
         }
     }
