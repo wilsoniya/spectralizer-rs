@@ -10,10 +10,10 @@ mod vis;
 
 use std::thread::sleep_ms;
 
-const BUF_SIZE: usize = 1024;
+const BUF_SIZE: usize = 512;
 const WIN_WIDTH: u32 = 256;
 const WIN_HEIGHT: u32 = 192;
-const SAMPLE_RATE: usize = 32768;
+const SAMPLE_RATE: usize = 20000;
 
 fn main() {
     let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink",
@@ -26,8 +26,6 @@ fn main() {
     let mut visualizer = vis::Visualizer::new("spectralizer", WIN_WIDTH,
                                               WIN_HEIGHT);
 
-    let mut i: u64 = 0;
-
     loop {
         pa.sample(&mut buf[..]);
 //      i += 1;
@@ -39,18 +37,15 @@ fn main() {
             f_buf[i] = n as f64;
         }
 
+        fft::hamming_window(&mut f_buf);
         fft::real_fft(&f_buf, &mut res);
 
         // merge negative and positive component of frequency
         for i in 0..res.len() {
             res[i] = res[i].abs();
-            // XXX filter out odd freqs which are all zero; why are they zero?
-            if i % 2 == 0 {
-                res[i/2] = res[i];
-            }
         }
 
-        visualizer.draw_hist(&res[0..BUF_SIZE/4]);
+        visualizer.draw_hist(&res[0..BUF_SIZE/2]);
         visualizer.handle_events();
     }
 }
