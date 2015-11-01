@@ -13,7 +13,7 @@ use std::thread::sleep_ms;
 const BUF_SIZE: usize = 512;
 const WIN_WIDTH: u32 = 256;
 const WIN_HEIGHT: u32 = 192;
-const SAMPLE_RATE: usize = 20000;
+const SAMPLE_RATE: usize = 16384;
 
 fn main() {
     let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink",
