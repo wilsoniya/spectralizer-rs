@@ -1,8 +1,9 @@
 //! Main module. Contains system entry point.
 
-extern crate num;
 extern crate libc;
+extern crate num;
 extern crate sdl2;
+extern crate time;
 
 mod pulse;
 mod fft;
@@ -10,10 +11,11 @@ mod vis;
 
 use std::thread::sleep_ms;
 
-const BUF_SIZE: usize = 512;
-const WIN_WIDTH: u32 = 256;
-const WIN_HEIGHT: u32 = 192;
+const BUF_SIZE: usize = 256;
+const WIN_WIDTH: u32 = 512;
+const WIN_HEIGHT: u32 = 384;
 const SAMPLE_RATE: usize = 16384;
+const FRAME_RATE: u64 = 48;
 
 fn main() {
     let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink",
@@ -26,12 +28,14 @@ fn main() {
     let mut visualizer = vis::Visualizer::new("spectralizer", WIN_WIDTH,
                                               WIN_HEIGHT);
 
+    let mut last_frame_ns: u64 = 0;
+
     loop {
         pa.sample(&mut buf[..]);
-//      i += 1;
-//      if i % ((SAMPLE_RATE / BUF_SIZE / 48) as u64) != 0 {
-//          continue;
-//      }
+        if time::precise_time_ns() - last_frame_ns < 1000000000 / FRAME_RATE {
+            visualizer.handle_events();
+            continue;
+        }
 
         for (i, &n) in buf.iter().enumerate() {
             f_buf[i] = n as f64;
@@ -47,5 +51,6 @@ fn main() {
 
         visualizer.draw_hist(&res[0..BUF_SIZE/2]);
         visualizer.handle_events();
+        last_frame_ns = time::precise_time_ns();
     }
 }

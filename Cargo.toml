@@ -7,3 +7,4 @@ authors = ["Michael Wilson <wilsoniya@gmail.com>"]
 libc = "0.1"
 num = "0.1"
 sdl2 = "0.9.1"
+time = "0.1.33"
