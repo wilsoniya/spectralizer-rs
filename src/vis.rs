@@ -12,7 +12,7 @@ use sdl2::keyboard::Keycode;
 /// Visualizer
 pub struct Visualizer<'a> {
     sdl_renderer: sdl2::render::Renderer<'a>,
-    sdl_event_pump: sdl2::sdl::EventPump,
+    sdl_event_pump: sdl2::EventPump,
     win_width: u32,
     win_height: u32,
 }
@@ -29,7 +29,8 @@ impl<'a> Visualizer<'a> {
             .build()
             .unwrap();
 
-        let renderer = window.renderer().present_vsync().accelerated().build().unwrap();
+        let mut renderer = window.renderer().present_vsync().accelerated().build().unwrap();
+        renderer.set_blend_mode(sdl2::render::BlendMode::Blend);
 
         let ret = Visualizer {
             sdl_renderer: renderer,
@@ -46,8 +47,9 @@ impl<'a> Visualizer<'a> {
         let height_offset = self.win_height as f64;
         let scale_factor: f64 = height_offset / 32768.0;
 
-        self.sdl_renderer.set_draw_color(Color::RGB(0, 0, 0));
-        self.sdl_renderer.clear();
+        self.sdl_renderer.set_draw_color(Color::RGBA(0, 0, 0, 60));
+        self.sdl_renderer.fill_rect(Rect::new_unwrap(0, 0, self.win_width,
+                                                     self.win_height));
         self.sdl_renderer.set_draw_color(Color::RGB(255, 255, 255));
 
         let width: u32 = if self.win_width >= freqs.len() as u32 {
@@ -68,7 +70,7 @@ impl<'a> Visualizer<'a> {
                 y = height_offset as i32;
             }
 
-            let rect = Rect::new(x, y, width, height).unwrap().unwrap();
+            let rect = Rect::new_unwrap(x, y, width, height);
             self.sdl_renderer.fill_rect(rect);
         }
 

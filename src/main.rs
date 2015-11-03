@@ -9,13 +9,11 @@ mod pulse;
 mod fft;
 mod vis;
 
-use std::thread::sleep_ms;
-
 const BUF_SIZE: usize = 256;
-const WIN_WIDTH: u32 = 512;
-const WIN_HEIGHT: u32 = 384;
+const WIN_WIDTH: u32 = 1024;
+const WIN_HEIGHT: u32 = 192;
 const SAMPLE_RATE: usize = 16384;
-const FRAME_RATE: u64 = 48;
+const FRAME_RATE: u64 = 60;
 
 fn main() {
     let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink",
