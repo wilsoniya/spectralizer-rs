@@ -6,7 +6,7 @@ use std::process::exit;
 use sdl2;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::event::Event;
+use sdl2::event::{Event, WindowEventId};
 use sdl2::keyboard::Keycode;
 
 /// Visualizer
@@ -15,6 +15,8 @@ pub struct Visualizer<'a> {
     sdl_event_pump: sdl2::EventPump,
     win_width: u32,
     win_height: u32,
+    scale_x: f32,
+    scale_y: f32,
 }
 
 impl<'a> Visualizer<'a> {
@@ -37,6 +39,8 @@ impl<'a> Visualizer<'a> {
             sdl_event_pump: sdl_context.event_pump().unwrap(),
             win_width: win_width,
             win_height: win_height,
+            scale_x: 1.0,
+            scale_y: 1.0,
         };
 
         ret
@@ -46,6 +50,8 @@ impl<'a> Visualizer<'a> {
     pub fn draw_hist(&mut self, freqs: &[f64]) {
         let height_offset = self.win_height as f64;
         let scale_factor: f64 = height_offset / 32768.0;
+
+        self.sdl_renderer.set_scale(self.scale_x, self.scale_y);
 
         self.sdl_renderer.set_draw_color(Color::RGBA(0, 0, 0, 60));
         self.sdl_renderer.fill_rect(Rect::new_unwrap(0, 0, self.win_width,
@@ -87,6 +93,11 @@ impl<'a> Visualizer<'a> {
                 Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     exit(0);
                 },
+                Event::Window { win_event_id: WindowEventId::Resized,
+                    data1: x, data2: y, .. } => {
+                        self.scale_x = x as f32 / self.win_width as f32;
+                        self.scale_y = y as f32 / self.win_height as f32;
+                }
                 _ => {}
             }
         }

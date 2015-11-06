@@ -9,8 +9,8 @@ mod pulse;
 mod fft;
 mod vis;
 
-const BUF_SIZE: usize = 256;
-const WIN_WIDTH: u32 = 1024;
+const BUF_SIZE: usize = 512;
+const WIN_WIDTH: u32 = 256;
 const WIN_HEIGHT: u32 = 192;
 const SAMPLE_RATE: usize = 16384;
 const FRAME_RATE: u64 = 60;
