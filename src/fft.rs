@@ -5,9 +5,14 @@ use std::f64::consts::PI;
 
 /// Real-valued FFT. Essentially just ignores imaginary components of
 /// Cooley-Tukey.
+///
+/// # Params
+/// * `x` - buffer full of time-domain samples to transform
+/// * `X` - buffer to contain transformed frequency domain buckets
 pub fn real_fft(x: &[f64], X: &mut [f64]) {
     assert!(x.len() == X.len());
-    let x_complex: Vec<Complex<f64>> = x.iter().map(|&n| Complex::new(n, 0.0)).collect();
+    let x_complex: Vec<Complex<f64>> = x.iter()
+        .map(|&n| Complex::new(n, 0.0)).collect();
     let ret_complex = ditfft2(&x_complex[..]);
 
     for (i, n) in ret_complex.iter().enumerate() {

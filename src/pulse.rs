@@ -88,6 +88,7 @@ impl PulseAudio {
         }
     }
 
+    /// Supposedly flushes all read and write buffers.
     pub fn flush(&mut self) {
         let mut err: c_int = 0;
         unsafe {

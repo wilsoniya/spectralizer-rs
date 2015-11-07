@@ -5,9 +5,9 @@ extern crate num;
 extern crate sdl2;
 extern crate time;
 
-mod pulse;
-mod fft;
-mod vis;
+pub mod pulse;
+pub mod fft;
+pub mod vis;
 
 const BUF_SIZE: usize = 512;
 const WIN_WIDTH: u32 = 256;
@@ -43,7 +43,7 @@ fn main() {
         fft::real_fft(&f_buf, &mut res);
 
         // merge negative and positive component of frequency
-        for i in 0..res.len() {
+        for i in 0..res.len() / 2 {
             res[i] = res[i].abs();
         }
 
