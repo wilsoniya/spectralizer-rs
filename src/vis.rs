@@ -90,7 +90,7 @@ impl<'a> Visualizer<'a> {
     pub fn handle_events(&mut self) {
         for event in self.sdl_event_pump.poll_iter() {
             match event {
-                Event::Quit {..} | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                Event::Quit {..} => {
                     exit(0);
                 },
                 Event::Window { win_event_id: WindowEventId::Resized,
