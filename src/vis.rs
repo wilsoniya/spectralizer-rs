@@ -6,12 +6,12 @@ use std::process::exit;
 use sdl2;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::event::{Event, WindowEventId};
+use sdl2::event::{Event, WindowEvent};
 use sdl2::keyboard::Keycode;
 
 /// Visualizer
-pub struct Visualizer<'a> {
-    sdl_renderer: sdl2::render::Renderer<'a>,
+pub struct Visualizer {
+    canvas: sdl2::render::WindowCanvas,
     sdl_event_pump: sdl2::EventPump,
     win_width: u32,
     win_height: u32,
@@ -19,23 +19,31 @@ pub struct Visualizer<'a> {
     scale_y: f32,
 }
 
-impl<'a> Visualizer<'a> {
+impl Visualizer {
     /// Creates a new visualizer.
-    pub fn new(win_name: &str, win_width: u32, win_height: u32) -> Visualizer<'a> {
+    pub fn new(win_name: &str, win_width: u32, win_height: u32) -> Visualizer {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
         let window = video_subsystem.window(win_name, win_width, win_height)
+            .resizable()
+            .borderless()
             .position_centered()
             .opengl()
             .build()
             .unwrap();
 
-        let mut renderer = window.renderer().present_vsync().accelerated().build().unwrap();
-        renderer.set_blend_mode(sdl2::render::BlendMode::Blend);
+        let mut canvas = window
+            .into_canvas()
+            .present_vsync()
+            .accelerated()
+            .build()
+            .unwrap();
+
+        canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
 
         let ret = Visualizer {
-            sdl_renderer: renderer,
+            canvas: canvas,
             sdl_event_pump: sdl_context.event_pump().unwrap(),
             win_width: win_width,
             win_height: win_height,
@@ -51,12 +59,12 @@ impl<'a> Visualizer<'a> {
         let height_offset = self.win_height as f64;
         let scale_factor: f64 = height_offset / 32768.0;
 
-        self.sdl_renderer.set_scale(self.scale_x, self.scale_y);
+        self.canvas.set_scale(self.scale_x, self.scale_y);
 
-        self.sdl_renderer.set_draw_color(Color::RGBA(0, 0, 0, 60));
-        self.sdl_renderer.fill_rect(Rect::new_unwrap(0, 0, self.win_width,
+        self.canvas.set_draw_color(Color::RGBA(0, 0, 0, 60));
+        self.canvas.fill_rect(Rect::new(0, 0, self.win_width,
                                                      self.win_height));
-        self.sdl_renderer.set_draw_color(Color::RGB(255, 255, 255));
+        self.canvas.set_draw_color(Color::RGB(255, 255, 255));
 
         let width: u32 = if self.win_width >= freqs.len() as u32 {
             self.win_width / freqs.len() as u32
@@ -76,11 +84,11 @@ impl<'a> Visualizer<'a> {
                 y = height_offset as i32;
             }
 
-            let rect = Rect::new_unwrap(x, y, width, height);
-            self.sdl_renderer.fill_rect(rect);
+            let rect = Rect::new(x, y, width, height);
+            self.canvas.fill_rect(rect);
         }
 
-        self.sdl_renderer.present();
+        self.canvas.present();
     }
 
     /// Handles UI events
@@ -93,13 +101,18 @@ impl<'a> Visualizer<'a> {
                 Event::Quit {..} => {
                     exit(0);
                 },
-                Event::Window { win_event_id: WindowEventId::Resized,
-                    data1: x, data2: y, .. } => {
+                Event::Window { win_event: WindowEvent::Resized (x, y), .. } => {
                         self.scale_x = x as f32 / self.win_width as f32;
                         self.scale_y = y as f32 / self.win_height as f32;
-                }
-                _ => {}
-            }
+                },
+                Event::Window { win_event: WindowEvent::SizeChanged (x, y), .. } => {
+                        self.scale_x = x as f32 / self.win_width as f32;
+                        self.scale_y = y as f32 / self.win_height as f32;
+                },
+                _ => {},
+            };
+
+            println!("{:?}", event);
         }
     }
 }
