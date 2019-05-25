@@ -9,6 +9,8 @@ pub mod pulse;
 pub mod fft;
 pub mod vis;
 
+mod errors;
+
 use std::time::Duration;
 use std::thread::sleep;
 
@@ -26,8 +28,8 @@ fn main() {
     let mut f_buf = [0f64; BUF_SIZE];
     let mut res   = [0f64; BUF_SIZE];
 
-    let mut visualizer = vis::Visualizer::new("spectralizer", WIN_WIDTH,
-                                              WIN_HEIGHT);
+    let mut visualizer = vis::Visualizer::new("spectralizer", WIN_WIDTH, WIN_HEIGHT)
+    .expect("error constructing Visualizer");
 
     let mut frame_start_ns: u64 = 0;
 

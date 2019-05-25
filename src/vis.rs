@@ -9,6 +9,8 @@ use sdl2::rect::Rect;
 use sdl2::event::{Event, WindowEvent};
 use sdl2::keyboard::Keycode;
 
+use crate::errors;
+
 /// Visualizer
 pub struct Visualizer {
     canvas: sdl2::render::WindowCanvas,
@@ -21,37 +23,35 @@ pub struct Visualizer {
 
 impl Visualizer {
     /// Creates a new visualizer.
-    pub fn new(win_name: &str, win_width: u32, win_height: u32) -> Visualizer {
-        let sdl_context = sdl2::init().unwrap();
-        let video_subsystem = sdl_context.video().unwrap();
+    pub fn new(win_name: &str, win_width: u32, win_height: u32) -> Result<Visualizer, errors::VisualizerError> {
+        let sdl_context = sdl2::init()?;
+        let video_subsystem = sdl_context.video()?;
 
         let window = video_subsystem.window(win_name, win_width, win_height)
             .resizable()
             .borderless()
             .position_centered()
             .opengl()
-            .build()
-            .unwrap();
+            .build()?;
 
         let mut canvas = window
             .into_canvas()
             .present_vsync()
             .accelerated()
-            .build()
-            .unwrap();
+            .build()?;
 
         canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
 
         let ret = Visualizer {
             canvas: canvas,
-            sdl_event_pump: sdl_context.event_pump().unwrap(),
+            sdl_event_pump: sdl_context.event_pump()?,
             win_width: win_width,
             win_height: win_height,
             scale_x: 1.0,
             scale_y: 1.0,
         };
 
-        ret
+        Ok(ret)
     }
 
     /// Draws a histogram using *freqs*.

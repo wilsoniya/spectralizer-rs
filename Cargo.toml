@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Michael Wilson <wilsoniya@gmail.com>"]
 
 [dependencies]
-libc = "0.1"
-num = "0.1"
+libc = "0.2.55"
+num = "0.2.0"
 sdl2 = "0.32.2"
-time = "0.1.33"
+time = "0.1.42"
