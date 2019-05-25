@@ -29,7 +29,6 @@ fn main() {
     let mut visualizer = vis::Visualizer::new("spectralizer", WIN_WIDTH,
                                               WIN_HEIGHT);
 
-    let mut last_frame_ns: u64 = 0;
     let mut frame_start_ns: u64 = 0;
 
     loop {
@@ -51,7 +50,6 @@ fn main() {
 
         visualizer.draw_hist(&res[0..BUF_SIZE/2]);
         visualizer.handle_events();
-        last_frame_ns = time::precise_time_ns();
 
         let sleep_nanos = 1_000_000_000i64 / FRAME_RATE as i64 - (time::precise_time_ns() - frame_start_ns) as i64;
 
