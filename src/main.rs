@@ -9,6 +9,9 @@ pub mod pulse;
 pub mod fft;
 pub mod vis;
 
+use std::time::Duration;
+use std::thread::sleep;
+
 const BUF_SIZE: usize = 512;
 const WIN_WIDTH: u32 = 256;
 const WIN_HEIGHT: u32 = 192;
@@ -27,13 +30,12 @@ fn main() {
                                               WIN_HEIGHT);
 
     let mut last_frame_ns: u64 = 0;
+    let mut frame_start_ns: u64 = 0;
 
     loop {
+        frame_start_ns = time::precise_time_ns();
+
         pa.sample(&mut buf[..]);
-        if time::precise_time_ns() - last_frame_ns < 1000000000 / FRAME_RATE {
-            visualizer.handle_events();
-            continue;
-        }
 
         for (i, &n) in buf.iter().enumerate() {
             f_buf[i] = n as f64;
@@ -50,5 +52,11 @@ fn main() {
         visualizer.draw_hist(&res[0..BUF_SIZE/2]);
         visualizer.handle_events();
         last_frame_ns = time::precise_time_ns();
+
+        let sleep_nanos = 1_000_000_000i64 / FRAME_RATE as i64 - (time::precise_time_ns() - frame_start_ns) as i64;
+
+        if sleep_nanos > 0 {
+            sleep(Duration::from_nanos(sleep_nanos as u64));
+        }
     }
 }
