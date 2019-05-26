@@ -1,9 +1,5 @@
 #[derive(Debug)]
-pub enum SpectralizerError {
-    VisualizerError(VisualizerError),
-}
-
-#[derive(Debug)]
+/// Errors that may occur as a result of visualizing spectra.
 pub enum VisualizerError {
     LowLevelError(String),
     WindowBuildError(sdl2::video::WindowBuildError),

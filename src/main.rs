@@ -2,17 +2,18 @@
 
 extern crate libc;
 extern crate num;
+extern crate rustfft;
 extern crate sdl2;
 extern crate time;
 
 pub mod pulse;
 pub mod fft;
 pub mod vis;
-
 mod errors;
 
 use std::time::Duration;
 use std::thread::sleep;
+use fft::FastFourierTransform;
 
 const BUF_SIZE: usize = 512;
 const WIN_WIDTH: u32 = 256;
@@ -21,29 +22,37 @@ const SAMPLE_RATE: usize = 16384;
 const FRAME_RATE: u64 = 60;
 
 fn main() {
-    let mut pa = pulse::PulseAudio::new("Spectralizer", "visualizer sink",
-                                        SAMPLE_RATE);
+    let mut pa = pulse::PulseAudio::new(
+        "Spectralizer",
+        "visualizer sink",
+        SAMPLE_RATE,
+    );
 
     let mut buf   = [0i16; BUF_SIZE];
     let mut f_buf = [0f64; BUF_SIZE];
     let mut res   = [0f64; BUF_SIZE];
 
-    let mut visualizer = vis::Visualizer::new("spectralizer", WIN_WIDTH, WIN_HEIGHT)
-    .expect("error constructing Visualizer");
+    let mut visualizer = vis::Visualizer::new(
+        "spectralizer",
+        WIN_WIDTH,
+        WIN_HEIGHT,
+    ).expect("error constructing Visualizer");
 
-    let mut frame_start_ns: u64 = 0;
+    let mut frame_start_ns: u64;
+
+    let _fft = fft::RustFFT::new(BUF_SIZE);
 
     loop {
         frame_start_ns = time::precise_time_ns();
 
-        pa.sample(&mut buf[..]);
+        pa.sample(&mut buf);
 
         for (i, &n) in buf.iter().enumerate() {
             f_buf[i] = n as f64;
         }
 
         fft::hamming_window(&mut f_buf);
-        fft::real_fft(&f_buf, &mut res);
+        _fft.real_fft(&mut f_buf, &mut res);
 
         // merge negative and positive component of frequency
         for i in 0..res.len() / 2 {

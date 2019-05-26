@@ -7,11 +7,10 @@ use sdl2;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::event::{Event, WindowEvent};
-use sdl2::keyboard::Keycode;
 
 use crate::errors;
 
-/// Visualizer
+/// Thing which can draw spectra.
 pub struct Visualizer {
     canvas: sdl2::render::WindowCanvas,
     sdl_event_pump: sdl2::EventPump,
@@ -23,7 +22,11 @@ pub struct Visualizer {
 
 impl Visualizer {
     /// Creates a new visualizer.
-    pub fn new(win_name: &str, win_width: u32, win_height: u32) -> Result<Visualizer, errors::VisualizerError> {
+    pub fn new(
+        win_name: &str,
+        win_width: u32,
+        win_height: u32,
+    ) -> Result<Visualizer, errors::VisualizerError> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
 
@@ -54,7 +57,8 @@ impl Visualizer {
         Ok(ret)
     }
 
-    /// Draws a histogram using *freqs*.
+    /// Draws a histogram from frequency domain representation in freqs.
+    #[allow(unused_must_use)]
     pub fn draw_hist(&mut self, freqs: &[f64]) {
         let height_offset = self.win_height as f64;
         let scale_factor: f64 = height_offset / 32768.0;
@@ -85,7 +89,7 @@ impl Visualizer {
             }
 
             let rect = Rect::new(x, y, width, height);
-            self.canvas.fill_rect(rect);
+            let _ = self.canvas.fill_rect(rect);
         }
 
         self.canvas.present();

@@ -7,6 +7,7 @@ use std::str::from_utf8;
 
 #[link(name = "pulse-simple")]
 #[link(name = "pulse")]
+#[allow(improper_ctypes)]
 extern {
     fn pa_simple_new(server: *mut c_char,
                      name: *mut c_char,
@@ -25,16 +26,12 @@ extern {
     fn pa_simple_flush(pa: *mut pa_simple, error: *mut c_int) -> c_int;
 }
 
-// typedef struct pa_simple pa_simple
+#[repr(C)]
+/// Counterpart to the connection object in pulse/simple.h
 struct pa_simple;
 
-/// Rust wrapper over simple pulseaudio structure.
-pub struct PulseAudio {
-    ptr: *mut pa_simple,
-    sample_rate: usize,
-}
-
 // see pulse/def.h
+#[repr(C)]
 struct pa_sample_spec {
     format: c_int,
     rate: u32,
@@ -45,15 +42,26 @@ struct pa_sample_spec {
 static PA_SAMPLE_S16LE: c_int = 3_i32;
 
 // defined as enum pa_stream_direction
+#[allow(unused)]
 static PA_STREAM_NODIRECTION: c_int = 0_i32;
+#[allow(unused)]
 static PA_STREAM_PLAYBACK:    c_int = 1_i32;
-static PA_STREAM_RECORD:      c_int = 2_i32;
+#[allow(unused)]
 static PA_STREAM_UPLOAD:      c_int = 3_i32;
+static PA_STREAM_RECORD:      c_int = 2_i32;
+
+/// Rust wrapper over simple pulseaudio structure.
+pub struct PulseAudio {
+    ptr: *mut pa_simple,
+}
 
 impl PulseAudio {
     /// Creates a new PulseAudio.
-    pub fn new(pa_name: &str, stream_name: &str,
-               sample_rate: usize) -> PulseAudio {
+    pub fn new(
+        pa_name: &str,
+        stream_name: &str,
+        sample_rate: usize,
+    ) -> PulseAudio {
         let mut err: c_int = 0;
 
         let mut s_spec = pa_sample_spec{
@@ -73,7 +81,7 @@ impl PulseAudio {
                                    &mut err);
             PulseAudio::handle_error(err);
 
-            PulseAudio { ptr: pa, sample_rate: sample_rate }
+            PulseAudio { ptr: pa }
         }
     }
 
